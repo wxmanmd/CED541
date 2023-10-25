@@ -1,5 +1,8 @@
 import streamlit as st
 import os
+import pcloud
+
+st.title("Module 1")
 
 st.title("Module 1 Videos")
 st.header("Upload your video")
@@ -64,3 +67,40 @@ vid = st.selectbox(
 )
 
 st.video(vid)
+
+# NEW code
+
+import streamlit as st
+import os
+import pcloud
+
+st.title("Video Upload and Playback with pCloud")
+
+# Initialize pCloud API client
+pcloud_client = pcloud.Client(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET')
+
+# Create a folder in pCloud to store uploaded videos
+folder_name = 'uploaded_videos'
+folder_info = pcloud_client.create_folder(folder_name)
+
+# Upload videos
+uploaded_files = st.file_uploader("Upload video(s)", type=["mp4", "avi"], accept_multiple_files=True)
+
+# Save the uploaded videos to pCloud and display success
+if uploaded_files:
+    for video in uploaded_files:
+        video_name = os.path.join(folder_name, video.name)
+        pcloud_client.uploadfile(video, video_name)
+        st.success(f"Video '{video.name}' uploaded to pCloud.")
+
+# List and select videos in the pCloud folder
+video_list = pcloud_client.listfolder(folder_info['metadata']['folderid'])['metadata']['contents']
+
+# Create a dropdown menu to select a video to play
+videos = [video['name'] for video in video_list]
+selected_video = st.selectbox("Select a video to play", videos)
+
+# Display the selected video
+if selected_video:
+    video_path = os.path.join(folder_name, selected_video)
+    st.video(f"https://usercontent.pcloud.com/{video_path}")
