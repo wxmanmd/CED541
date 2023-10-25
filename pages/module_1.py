@@ -69,38 +69,62 @@ vid = st.selectbox(
 st.video(vid)
 
 # NEW code
+# Firebase to store vids & comments
 
 import streamlit as st
 import os
-import pcloud
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
 
-st.title("Video Upload and Playback with pCloud")
+st.title("Video Upload and Comments with Firebase")
 
-# Initialize pCloud API client
-pcloud_client = pcloud.Client(client_id='YOUR_CLIENT_ID', client_secret='YOUR_CLIENT_SECRET')
+# Initialize Firebase with your Firebase project's credentials
+firebase_credentials = credentials.Certificate("path/to/your/firebase-credentials.json")
+firebase_app = firebase_admin.initialize_app(firebase_credentials)
 
-# Create a folder in pCloud to store uploaded videos
-folder_name = 'uploaded_videos'
-folder_info = pcloud_client.create_folder(folder_name)
+# Create a reference to your Firebase Realtime Database or Firestore
+firebase_db = db.reference('/videos_and_comments')
 
 # Upload videos
 uploaded_files = st.file_uploader("Upload video(s)", type=["mp4", "avi"], accept_multiple_files=True)
 
-# Save the uploaded videos to pCloud and display success
 if uploaded_files:
     for video in uploaded_files:
-        video_name = os.path.join(folder_name, video.name)
-        pcloud_client.uploadfile(video, video_name)
-        st.success(f"Video '{video.name}' uploaded to pCloud.")
+        video_name = video.name
+        video_url = None  # You'll store the video URL in Firebase
+        # Store the video in Firebase Storage or as a download URL in the database
+        # You can use Firebase Storage to store the actual video files
 
-# List and select videos in the pCloud folder
-video_list = pcloud_client.listfolder(folder_info['metadata']['folderid'])['metadata']['contents']
+        # Save video information to Firebase
+        video_data = {
+            "name": video_name,
+            "url": video_url
+        }
+        video_ref = firebase_db.child("videos").push(video_data)
+
+        st.success(f"Video '{video_name}' uploaded.")
 
 # Create a dropdown menu to select a video to play
-videos = [video['name'] for video in video_list]
-selected_video = st.selectbox("Select a video to play", videos)
+videos = firebase_db.child("videos").get()
+video_names = [video.val()["name"] for video in videos]
+selected_video_name = st.selectbox("Select a video to play", video_names)
 
-# Display the selected video
-if selected_video:
-    video_path = os.path.join(folder_name, selected_video)
-    st.video(f"https://usercontent.pcloud.com/{video_path}")
+if selected_video_name:
+    selected_video = None  # Retrieve the selected video data from Firebase
+    video_url = selected_video.val()["url"]
+    st.video(video_url)
+
+    st.subheader("Comments")
+    comment = st.text_area("Add your comment:")
+    if st.button("Submit"):
+        # Save the comment in Firebase under the selected video
+        comment_data = {
+            "text": comment,
+            "video_id": selected_video.key
+        }
+        firebase_db.child("comments").push(comment_data)
+
+    comments = firebase_db.child("comments").order_by_child("video_id").equal_to(selected_video.key).get()
+    for comment in comments:
+        st.write(comment.val()["text"])
