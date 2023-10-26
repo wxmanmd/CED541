@@ -6,10 +6,10 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 
-st.title("Video Upload and Comments with Firebase")
+st.title("Module 1 Videos and Comments")
 
 # Initialize Firebase with your Firebase project's credentials
-firebase_credentials = credentials.Certificate("path/to/your/firebase-credentials.json")
+firebase_credentials = credentials.Certificate("~/Documents/GitHub/CED541/credentials.js")
 firebase_app = firebase_admin.initialize_app(firebase_credentials)
 
 # Create a reference to your Firebase Realtime Database or Firestore
