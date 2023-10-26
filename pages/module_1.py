@@ -2,6 +2,7 @@
 
 import streamlit as st
 import os
+import pyrebase 
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
@@ -9,8 +10,14 @@ from firebase_admin import db
 st.title("Module 1 Videos and Comments")
 
 # Initialize Firebase with your Firebase project's credentials
-firebase_credentials = credentials.Certificate("~/Documents/GitHub/CED541/credentials.js")
-firebase_app = firebase_admin.initialize_app(firebase_credentials)
+firebaseConfig = {
+  apiKey: "AIzaSyDzPhkdyOLt6EnRVW3x_ioEwFw5RAH5Jd8",
+  authDomain: "class-videos-page.firebaseapp.com",
+  projectId: "class-videos-page",
+  storageBucket: "class-videos-page.appspot.com",
+  messagingSenderId: "876777754102",
+  appId: "1:876777754102:web:ca5faf1507083c561e8bd7"
+}
 
 # Create a reference to your Firebase Realtime Database or Firestore
 firebase_db = db.reference('/videos_and_comments')
