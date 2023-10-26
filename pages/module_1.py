@@ -18,9 +18,13 @@ firebaseConfig = {
   messagingSenderId: "876777754102",
   appId: "1:876777754102:web:ca5faf1507083c561e8bd7"
 }
+# firebase authentication
+firebase = pyrebase.initialize_app(firebaseConfig)
+auth = firebase.auth()
 
 # Create a reference to your Firebase Realtime Database or Firestore
-firebase_db = db.reference('/videos_and_comments')
+db = firebase.database()
+storage = firebase.storage()
 
 # Upload videos
 uploaded_files = st.file_uploader("Upload video(s)", type=["mp4", "avi"], accept_multiple_files=True)
@@ -37,12 +41,12 @@ if uploaded_files:
             "name": video_name,
             "url": video_url
         }
-        video_ref = firebase_db.child("videos").push(video_data)
+        video_ref = storage.child("videos").push(video_data)
 
         st.success(f"Video '{video_name}' uploaded.")
 
 # Create a dropdown menu to select a video to play
-videos = firebase_db.child("videos").get()
+videos = storage.child("videos").get()
 video_names = [video.val()["name"] for video in videos]
 selected_video_name = st.selectbox("Select a video to play", video_names)
 
@@ -59,8 +63,8 @@ if selected_video_name:
             "text": comment,
             "video_id": selected_video.key
         }
-        firebase_db.child("comments").push(comment_data)
+        storage.child("comments").push(comment_data)
 
-    comments = firebase_db.child("comments").order_by_child("video_id").equal_to(selected_video.key).get()
+    comments = storage.child("comments").order_by_child("video_id").equal_to(selected_video.key).get()
     for comment in comments:
         st.write(comment.val()["text"])
