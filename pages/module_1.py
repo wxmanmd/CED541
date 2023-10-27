@@ -1,4 +1,5 @@
 # Firebase to store vids & comments
+# there is no firebase project setup for this 
 
 import streamlit as st
 import os
